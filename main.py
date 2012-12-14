@@ -30,9 +30,6 @@ class InteractTimeHandler(tornado.web.RequestHandler):
 class InteractGoodsHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("interact/goods.html")
-class InteractMoneyHandler(tornado.web.RequestHandler):
-	def get(self):
-		self.render("interact/money.html")
 		
 class Application(tornado.web.Application):
 	def __init__(self):
@@ -45,8 +42,7 @@ class Application(tornado.web.Application):
 			
 			(r"/interact/?", InteractHandler),
 			(r"/interact/time/?", InteractTimeHandler),
-			(r"/interact/goods/?", InteractGoodsHandler),
-			(r"/interact/money/?", InteractMoneyHandler),
+			(r"/interact/goods/?", InteractGoodsHandler)
 		]
 		settings = dict(
 			debug=True,
