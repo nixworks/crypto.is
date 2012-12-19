@@ -2,7 +2,7 @@
 <head>
 	<title>Crypto.is</title>
 	<link href="/static/img/favicon.png" rel="icon" type="image/x-png" />
-	<script type="text/javascript" src=" https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+	<script type="text/javascript" src="/static/js/jquery.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="/static/css/960.css" />
 	<link rel="stylesheet" type="text/css" href="/static/css/style.css" />
 	{% block head %}
@@ -25,8 +25,16 @@
 		</div>
 	</div>
 	<div id="main_content" class="container_12">
-	{% block content %}
-	{% end %}
+	  <div class="grid_7">
+	    {% block content %}
+	    {% end %}
+	  </div>
+	  <div class="clear_40"></div>
+	  <div class="grid_7">
+	    {% block postcontent %}
+	    {% end %}
+	  </div>
+	  <div class="clear_40"></div>
 	</div>
 	<div id="footer_wrapper">
 		<div id="footer" class="container_12">

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block postcontent %}
+</div>
+<a name="comments"></a>
+<div id="comments-container">
+  <h4>Comments</h4>
+  <div id="comments">
+    Comments loaded via javascript...
+  </div>
+  <a href="#" id="add-a-comment">Add a comment...</a>
+  <div id="insert-comment">
+    <label for="name">Name: </label> <input type="text" name="name" /> <em>required</em> <br />
+    <label for="email">E-Mail: </label> <input type="text" name="email" /> <em>optional, hidden</em> <br />
+    <label for="website">Website:</label> <input type="text" name="website" /> <br />
+    <label for="comment">Comment:</label> <em>required, <a id="markdown-help-link" href="#">markdown enabled (help)</a></em> <br/>
+    <div id="markdown-help"><!-- ganked from reddit -->
+      <table><tr style="background-color: #ffff99; text-align: center"><td><em>you type:</em></td><td><em>you see:</em></td></tr><tr><td>*italics*</td><td><em>italics</em></td></tr><tr><td>**bold**</td><td><b>bold</b></td></tr><tr><td>[stolen from reddit!](http://reddit.com)</td><td><a href="http://reddit.com">stolen from reddit!</a></td></tr><tr><td>* item 1<br/>* item 2<br/>* item 3</td><td><ul><li>item 1</li><li>item 2</li><li>item 3</li></ul></td></tr><tr><td>&gt; quoted text</td><td><blockquote>quoted text</blockquote></td></tr><tr><td>Lines starting with four spaces<br/>are treated like code:<br/><br/><span class="spaces">&nbsp;&nbsp;&nbsp;&nbsp;</span>if 1 * 2 &lt 3:<br/><span class="spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>print "hello, world!"<br/></td><td>Lines starting with four spaces<br/>are treated like code:<br/><pre>if 1 * 2 &lt 3:<br/>&nbsp;&nbsp;&nbsp;&nbsp;print "hello, world!"</pre></td></tr></table>
+    </div>
+    <textarea name="comment"></textarea>
+    <div id="submitContainer">
+      <div class="errors"></div>
+      <input class="submit" type="submit" value="Leave a Comment" />
+    </div>
+  </div>
+</div>
+<script type="text/html" style="display:none" id="comment_template">
+  <div class="comment">
+    <div class="info">
+      <span class="comment-author">#{author}</span><br />
+      <span class="comment-date">#{submitted}</span><br />
+      <a class="comment-homepage" href="#{website}">homepage</a>
+    </div>
+    <div class="content">#{comment}</div>
+  </div>
+</script>
+<script type="text/javascript">
+$(document).ready(function(){
+    var commentsSubmitFail = function(req,error,ex) {
+        $('#insert-comment .submit').val('Leave a Comment').attr('disabled', '');
+        commentFail(req,error,ex,'Submit');
+    };
+    var commentsLoadFail = function(req,error,ex) {
+        commentFail(req,error,ex,'Loading');
+    };
+    var commentFail = function(req,error,ex,mode) {
+        $('#comments').html('Comment '+mode+' Failed.  <a href="#">Try again</a>, or let us know something is broken. <span>?</span>');
+        $('#comments span').click(function() { alert(ex); });
+        $('#comments a').click(loadComments);
+    };
+    var commentsSubmitSuccess = function(data) {
+        $('#insert-comment .submit').val('Leave a Comment').attr('disabled', '');
+        if(data.error)
+            alert(data.error);
+        else {
+            $('#insert-comment').slideUp();
+            commentsLoadSuccess(data);
+        }
+    }
+    var commentsLoadSuccess = function(data) {
+        var template = $.template($('#comment_template').html());
+        if(data.comments.length == 0)
+            $('#comments').html('No comments on this page');
+                else
+        {
+            $('#comments').html('');
+            for(var c in data.comments)
+            {
+                var comment = $(template.eval(data.comments[c]));
+                if(data.comments[c].website == '') $('a', comment).remove();
+                if(data.comments[c].email == '31e32ecb7309ad47e1ecdd34f4c26529') $(comment).addClass('itsme');
+                $('#comments-container #comments').append(comment);
+            }
+        }
+    };
+    var loadComments = function() {
+        $('#comments-container').show();
+        $('#comments').html('Loading...');
+        $.ajax({
+            'url':'/blog/comments?postid=' + getPageKey(),
+            'type':'get',
+            'success':commentsLoadSuccess,
+            'error':commentsLoadFail,
+            'cache':false
+        });
+    };
+    var getPageKey = function() {
+        return location.href.substring(location.href.indexOf('.is/')+4+5);
+    };
+    console.log(getPageKey());
+    if(getPageKey() != "" && getPageKey() != "index")
+        loadComments();
+    $('#add-a-comment').click(function() { $('#add-a-comment').hide(); $('#insert-comment').slideDown(); return false; });
+    $('#markdown-help-link').click(function() { $('#markdown-help').toggle(); return false; });
+    $('#insert-comment .submit').click(function() {
+        $('#insert-comment .errors').html('');
+        var errors = [];
+        var data = {
+            'name' : $.trim($('#insert-comment input[name=name]').val()),
+            'email' : $.trim($('#insert-comment input[name=email]').val()),
+            'comment' : $.trim($('#insert-comment textarea[name=comment]').val()),
+            'website' : $.trim($('#insert-comment input[name=website]').val()),
+            'postid' : getPageKey()
+        };
+        if(data.name == '') errors.push('Name is required');
+        if(data.comment == '') errors.push('Comment is required');
+
+        for(var i=0; i<errors.length; i++)
+            $('#insert-comment .errors').append(errors[i] + '<br />');
+        if(errors.length != 0) return false;
+
+        $('#insert-comment .submit').val('Submitting').attr('disabled', 'disabled');
+        $.ajax({
+            'url':'/blog/comments',
+            'type':'post',
+            'data': data,
+            'success':commentsSubmitSuccess,
+            'error':commentsSubmitFail,
+            'cache':false
+        });
+    });
+});
+</script>
+<div>
+{% end %}

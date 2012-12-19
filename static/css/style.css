@@ -275,30 +275,74 @@ p {
 #main_page_image img {
 	float: right;
 }
-
-
-#donate_button {
-	background-color: #333333;
-	color: #f6f6f6;
-	font-size: 28px;
-	text-align: center;
-	font-weight: bold;
-	width: 200px;
-	margin-left: auto;
-	margin-right: auto;
-	padding: 15px 20px;
-	border-radius: 5px;
-	-moz-border-radius: 5px;
-	margin-bottom: 30px;
+#comments-container  {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 15px;
+    display:none;
 }
-
-#donate_button:hover {
-	background-color: #888;
-	cursor: pointer;
+#add-a-comment {
+    margin:15px;
 }
-
-#donate_button a:hover {
-	text-decoration: none;
+#insert-comment {
+    margin:15px;
+    display:none;
 }
-
-
+#insert-comment .errors {
+    color:red;
+}
+#comments-container #comments .comment, #insert-comment  {
+    border:1px solid #aaa;
+    padding:15px;
+    min-height: 145px;
+    margin-top: 15px;
+}
+#comments-container #comments .itsme {
+    background-color: #FF9;
+}
+#comments-container #comments .comment pre {
+    margin-left:90px;
+}
+#comments-container #comments .comment .info {
+    text-align:center;
+    float:left;
+    width:100px;
+    margin-right:20px;
+}
+#comments-container #comments .comment .comment-author {
+    font-weight:bold;
+}
+#comments-container #comments .comment .info img {
+    border: 0px;
+}
+#markdown-help {display:none;}
+#markdown-help table {border-collapse:collapse;}
+#markdown-help table td {border:1px solid silver;}
+#markdown-help .spaces {background-color:#aaa;}
+#insert-comment input, #insert-comment textarea {
+    font-size:large;
+    width:350px
+}
+#insert-comment textarea {
+    width:100%;
+    height:100px
+}
+#insert-comment label {
+    display:inline-block;
+    width:100px;
+    font-size:large;
+}
+#insert-comment em {
+    font-size:small;
+}
+#submitContainer {
+    float:right;
+}
+#insert-comment input.submit {
+    width: 200px;
+    height:30px;
+}
+.blogdate {
+    font-style: italic;
+    margin-top: -30px;
+}

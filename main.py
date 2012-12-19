@@ -30,13 +30,21 @@ class InteractTimeHandler(tornado.web.RequestHandler):
 class InteractGoodsHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("interact/goods.html")
-		
+# Blog Posts
+class BlogPostHandler(tornado.web.RequestHandler):
+	def get(self, post):
+		if "." not in post and os.path.exists("/web/crypto.is/templates/blog/" + post + ".html"):
+			self.render("blog/" + post + ".html")
+		else:
+			raise tornado.web.HTTPError(404)
+
 class Application(tornado.web.Application):
 	def __init__(self):
 		handlers = [
 			(r"/", MainHandler),
 			(r"/about/?", AboutHandler),
 			(r"/blog/?", BlogHandler),
+			(r"/blog/(.*)", BlogPostHandler),
 			(r"/projects/?", ProjectHandler),
 			(r"/code-peer-review/?", AuditHandler),
 			
