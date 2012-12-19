@@ -37,7 +37,7 @@
 <script type="text/javascript">
 $(document).ready(function(){
     var commentsSubmitFail = function(req,error,ex) {
-        $('#insert-comment .submit').val('Leave a Comment').attr('disabled', '');
+        $('#insert-comment .submit').val('Leave a Comment').removeAttr('disabled');
         commentFail(req,error,ex,'Submit');
     };
     var commentsLoadFail = function(req,error,ex) {
@@ -49,9 +49,11 @@ $(document).ready(function(){
         $('#comments a').click(loadComments);
     };
     var commentsSubmitSuccess = function(data) {
-        $('#insert-comment .submit').val('Leave a Comment').attr('disabled', '');
-        if(data.error)
+        $('#insert-comment .submit').val('Leave a Comment').removeAttr('disabled');
+        if(data.error) {
             alert(data.error);
+	    $('#insert-comment .submit').val('Leave a Comment').removeAttr('disabled');	
+	}
         else {
             $('#insert-comment').slideUp();
             commentsLoadSuccess(data);

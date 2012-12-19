@@ -10,9 +10,6 @@ class MainHandler(tornado.web.RequestHandler):
 class AboutHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("about.html")
-class BlogHandler(tornado.web.RequestHandler):
-	def get(self):
-		self.render("blog.html")
 class AuditHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("cpr.html")
@@ -31,6 +28,19 @@ class InteractGoodsHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.render("interact/goods.html")
 # Blog Posts
+class BlogHandler(tornado.web.RequestHandler):
+	def get(self):
+		self.render("blog.html")
+class BlogArchiveHandler(tornado.web.RequestHandler):
+	def get(self):
+		bloglist = open('/web/crypto.is/templates/bloglist.txt', 'r')
+		lines = bloglist.readlines()
+		posts = []
+		for p in lines:
+			f = open('/web/crypto.is/templates/blog/' + p.strip() + '.html', 'r')
+			title = [i for i in f.readlines() if '<h1>' in i][0].replace('</', '').replace('<', '').replace('h1>', '')
+			posts.append((title.strip(), p.strip()))
+		self.render("blogarchives.html", posts=posts)
 class BlogPostHandler(tornado.web.RequestHandler):
 	def get(self, post):
 		if "." not in post and os.path.exists("/web/crypto.is/templates/blog/" + post + ".html"):
@@ -44,6 +54,7 @@ class Application(tornado.web.Application):
 			(r"/", MainHandler),
 			(r"/about/?", AboutHandler),
 			(r"/blog/?", BlogHandler),
+			(r"/blog/archives?/?", BlogArchiveHandler),
 			(r"/blog/(.*)", BlogPostHandler),
 			(r"/projects/?", ProjectHandler),
 			(r"/code-peer-review/?", AuditHandler),
