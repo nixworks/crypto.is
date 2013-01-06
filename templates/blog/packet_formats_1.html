@@ -171,14 +171,14 @@ function animateOne_setup()
 }
 function animateOne_1(backwards)
 {
-    $('#arrow').css('display', 'block');
+    $('#arrow').css('display', 'table');
     $('#arrow span').text('This is the Mix Message.  The hidden parts are encrypted.');
     $('#arrow').position({
         of:$('#one legend'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet : 10}).effect('bounce');
     scrollToArrow();
 		
 	$('#one_header1_rsasessionkey').css('color', '');
@@ -186,13 +186,13 @@ function animateOne_1(backwards)
 }
 function animateOne_2(backwards)
 {
-    $('#arrow span').text('First, Decrypt the Session Key with your RSA Private Key');
+    $('#arrow span').html('First, Decrypt the Session Key <br />with your RSA Private Key');
     $('#arrow').position({
         of:$('#one_header1_rsasessionkey'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#one_header1_rsasessionkey').animate({
             color: '#bca510',
@@ -211,7 +211,7 @@ function animateOne_3(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     
     $('#one_header1_decryptsto, #one_header1_iv').animate({
@@ -230,7 +230,7 @@ function animateOne_4(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#one_header1_enc').animate({
             color: 'black',
@@ -248,7 +248,7 @@ function animateOne_5(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#one_header1_enc_tdes, #one_header1_enc_iv').animate({
             color: 'blue',
@@ -267,8 +267,7 @@ function animateOne_6(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10
-        });
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#one_payload').animate({
             color: 'black',
@@ -374,14 +373,14 @@ function animateTwo_setup()
 }
 function animateTwo_1(backwards)
 {
-	$('#arrow').css('display', 'block');
+	$('#arrow').css('display', 'table');
     $('#arrow span').text('This is the Mix Message.  The hidden parts are encrypted.');
     $('#arrow').position({
         of:$('#two legend'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
 	$('#two_header1_rsasessionkey').css('color', '');
 	animationComplete();
@@ -394,7 +393,7 @@ function animateTwo_2(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_header1_rsasessionkey').animate({
             color: '#bca510',
@@ -413,7 +412,7 @@ function animateTwo_3(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_header1_decryptsto').css('visibility', '');
     $('#two_header1_decryptsto, #two_header1_iv').animate({
@@ -432,7 +431,7 @@ function animateTwo_4(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_header1_enc').animate({
             color: 'black',
@@ -450,7 +449,7 @@ function animateTwo_5(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_header1_enc_tdes, #two_header1_enc_iv').animate({
             color: 'blue',
@@ -470,7 +469,7 @@ function animateTwo_6(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_header2_enc').css({'visibility':'visible'});
     $('#two_header2_enc').animate({
@@ -494,7 +493,7 @@ function animateTwo_7(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_headers3').animate({
             color: 'black',
@@ -516,7 +515,7 @@ function animateTwo_8(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#two_payload_inner').css({'visibility':''});
     $('#two_payload_inner').animate({
@@ -535,7 +534,7 @@ function animateTwo_9(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
 	animationComplete();
 }
@@ -547,7 +546,7 @@ function animateTwo_10(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
 	animationComplete();
 }
@@ -559,44 +558,44 @@ function animateTwo_11(backwards)
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
 	animationComplete();
 }
 function animateTwo_12(backwards)
 {
-    $('#arrow span').text('The Key to decrypt the yellow header part is encrypted to a Public Key we don\'t control')
+    $('#arrow span').html('The Key to decrypt the yellow <br />header part is encrypted to a <br />Public Key we don\'t control')
     $('#arrow').position({
         of:$('#two_header2_rsasessionkey'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
 	animationComplete();
 }
 function animateTwo_13(backwards)
 {
-    $('#arrow span').text('The key to decrypt the public parts of the next header is inside the yellow header part.')
+    $('#arrow span').html('The key to decrypt the public parts of the next header <br />is inside the yellow header part.')
     $('#arrow').position({
         of:$('#two_headers3 legend'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#btn_animatetwo').css('visibility', 'hidden');
 	animationComplete();
 }
 function animateTwo_14(backwards)
 {
-    $('#arrow span').text('And the key to decrypt the purple payload is either inside the yellow header part, or in a subsequant mix header (we can\'t be sure).')
+    $('#arrow span').html('And the key to decrypt the purple payload is either inside the<br />yellow header part, or in a subsequant mix header (we can\'t be sure).')
     $('#arrow').position({
         of:$('#two_payload_inner span'),
         my:'left center',
         at:'right center', 
         'collision':'none',
-        offet:10});
+        offet:10}).effect('bounce');
     scrollToArrow();
     $('#btn_animatetwo').css('visibility', '');
 	animationComplete();
@@ -729,7 +728,7 @@ $("#mixmaster_accordian").accordion({
 
 <p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</p>
 
-<div style="display:none" id="arrow"><img src="/static/blog/post4/arrow.gif" style="vertical-align:middle;"/><span style="font-weight:bold;font-size:large;padding:3px;border:1px dashed grey;background:white;">Testing Words</span></div>
+<div style="display:none" id="arrow"><img src="/static/blog/post4/arrow.gif"/><span style="display: table-cell; vertical-align: middle; font-weight:bold;font-size:large;padding:3px;border:1px dashed grey;background:white;">Testing Words</span></div>
 
 <div id="navfloat">
     <ul>
