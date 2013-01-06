@@ -338,6 +338,6 @@ Message recieved by Node 3, decrypted, and decoded:
  
 <p>The flaw in Mixmaster is that there is no integrity protection of the Mix Headers or Payload as they cross nodes.  A node is able to verify that the Mix Header <em>it</em> processes has not been altered (at least up to the Padding) - but cannot make the same statement about the <em>other</em> Mix Headers or the Payload.  So we modify a Header intended for Node 3 as the message leaves Node 1, Node 2 will pass it on (unaware it's been tampered), and Node 3 recognizes the tampering.</p>
 
-<p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</p>
+<p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</em></p>
 
 {% end %}
