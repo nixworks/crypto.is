@@ -1,0 +1,343 @@
+{% extends "../blogbase.html" %}
+
+{% block content %}
+<h1>A Tagging Attack on Mixmaster</h1>
+<div class="blogdate">05 Jan 2013 23:48:00 EST</div>
+
+<style type="text/css">
+.packet {
+    font-style: italic;
+    font-variant: small-caps;
+    font-family: monoscape;
+}
+pre {
+    padding-left:30px;
+}
+.footnote:before {
+    content: 'Footnote: '
+}
+.footnote {
+    font-style: italic;
+    font-size: small;
+    font-family: Cambria,'Palatino Linotype','Book Antiqua','URW Palladio L',serif;;
+}
+</style>
+
+<p>We've laid the groundwork in the past two blog posts to explain a tagging attack on the Mixmaster remailer system.  In our scenario, an attacker runs several remailer nodes in a system.</p>
+
+<p><img src="/static/blog/post5/network.png" style="border:black solid 1px; padding:3px; margin-left:auto; margin-right:auto; display:block" /></p>
+
+<p>An attacker may get lucky and control the first and last nodes in a path.</p>  
+
+<p><img src="/static/blog/post5/path.png" style="border:black solid 1px; padding:3px; margin-left:auto; margin-right:auto; display:block" /></p>
+
+<p>This seems a hopeless scenario - but for a single message, a good remailer network <strong>can</strong> provide unlinkability in this situation.  An attacker would know that Alice sent an email, and they would know that john@nytimes.com recieved an email, and its contents - but the attacker <strong>should not</strong> be able to link these two messages together.  That unlinkability is supposed to be provided by the middle node. But the unlinkability is lost if the attacker can tag the message in a way for them to recognize later.  <span class="footnote">This example also illustrates why you want a lot of people using an anonymity network - there are vastly more people in the crowd that could have sent the incoming message, and vastly outgoing messages Alice could have sent.</span></p>
+
+<p>But where in the Mixmaster packet format can we create a tag that won't be rejected by the middle node, would allow us to recognize the tag when we see it, and not corrupt the Mix Message so much that we are unable to determine the ultimate destination of the message? Let's go back to the packet format (which we covered in a <a href="">previous blog post</a>) - we'll display the data we will see, and what we know, as it leaves the first (attacker-controlled) node.</p>
+
+
+<style type="text/css">
+#two #two_header1_enc, #two #two_header2, .lightred {
+    background: #FFDDDD;
+}
+#two #two_header2_enc, #two #two_payload, .darkred {
+    background: #FF7777;
+}
+</style>
+
+<pre>
+<fieldset id="two"><legend>Mixmaster Intermediate Message, as it is on it's way to the Second Hop</legend><fieldset id="two_headers"><legend>Mix Headers</legend><fieldset id="two_header1"><legend>Mix Header 1</legend>Public Key ID (16 bytes)   0xABCDABCD 0xABCDABCD 0xABCDABCD 0xABCDABCD
+Length of RSA Enc-ed Data  0xF0
+<span id="two_header1_rsasessionkey">RSA Encrypted Session Key  0x12345678 0x12345678 0x12345678 0x12345678
+         (128 bytes)       0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678</span>     
+                           <span id="two_header1_decryptsto">Decrypts To: 0xDABCDABC 0xDABCDABC 0xDABCDABC</span>
+<span id="two_header1_iv">Initialization Vector      0x09090909 0x09090909</span>
+<fieldset id="two_header1_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       0x87214365 0x87214365 0x87214365 0x87214365
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       0xFE45FE45 0xFE45FE45 
+                           0xFE45FE45 0xFE45FE45
+                           0xFE45FE45 0xFE45FE45</span>
+Packet Type Identifier     0x02
+Packet Information
+<span id="two_header1_enc_iv">Initialization Vector1     0x0A0A0A0A 0x0A0A0A0A
+Initialization Vector2     0x0B0A0A0A 0x0B0A0A0A
+Initialization Vector3     0x0C0A0A0A 0x0C0A0A0A
+Initialization Vector4     0x0D0A0A0A 0x0D0A0A0A
+Initialization Vector5     0x0E0A0A0A 0x0E0A0A0A
+Initialization Vector6     0x0F0A0A0A 0x0F0A0A0A
+Initialization Vector7     0x1A0A0A0A 0x1A0A0A0A
+Initialization Vector8     0x1B0A0A0A 0x1B0A0A0A
+Initialization Vector9     0x1C0A0A0A 0x1C0A0A0A
+Initialization Vector10    0x1D0A0A0A 0x1D0A0A0A
+Initialization Vector11    0x1F0A0A0A 0x1F0A0A0A
+Initialization Vector12    0x2A0A0A0A 0x2A0A0A0A
+Initialization Vector13    0x2B0A0A0A 0x2B0A0A0A
+Initialization Vector14    0x2C0A0A0A 0x2C0A0A0A
+Initialization Vector15    0x2D0A0A0A 0x2D0A0A0A
+Initialization Vector16    0x2E0A0A0A 0x2E0A0A0A
+Initialization Vector17    0x2F0A0A0A 0x2F0A0A0A
+Initialization Vector18    0x3A0A0A0A 0x3A0A0A0A
+Initialization Vector19    0x3B0A0A0A 0x3B0A0A0A</span>
+Remailer Address           exitremailer@exam.com 0x00 0x00 (Padded to 80 bytes)
+Timestamp                  0x30303030 0x000506
+Message Digest             0x11112222 0x11112222 0x11112222 0x11112222
+Padding                    0x01020304 0x05060708 (Fill to 328 Bytes..)
+</fieldset></fieldset><fieldset id="two_header2"><legend>Mix Header 2</legend>
+Public Key ID (16 bytes)   0xABCDABCD 0xABCDABCD 0xABCDABCD 0xABCDABCD
+Length of RSA Enc-ed Data  0xF0
+<span id="two_header2_rsasessionkey">RSA Encrypted Session Key  0x12345678 0x12345678 0x12345678 0x12345678
+         (128 bytes)       0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678</span>     
+Initialization Vector      0x09090909 0x09090909
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>
+Packet ID (16 bytes)       0x87214365 0x87214365 0x87214365 0x87214365
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       0xFE45FE45 0xFE45FE45 
+                           0xFE45FE45 0xFE45FE45
+                           0xFE45FE45 0xFE45FE45</span>
+Packet Type Identifier     0x01
+Packet Information
+Message ID (16 bytes)      0x31537597 0x31537597 0x31537597 0x31537597
+<span id="two_header1_enc_iv">Initialization Vector      0x0A0A0A0A 0x0A0A0A0A</span>
+Timestamp                  0x30303030 0x000506
+Message Digest             0x11112222 0x11112222 0x11112222 0x11112222
+Padding                    0x01020304 0x05060708 (Fill to 328 Bytes..)
+</fieldset></fieldset></fieldset><fieldset id="two_headers3"><legend>Mix Headers 3-20</legend>Fake, Unimportant Data     0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           ....
+</fieldset><fieldset id="two_payload"><legend>Mix Payload</legend><fieldset id="two_payload_inner"><span>Indecipherable Data</span></fieldset></fieldset></fieldset>
+</pre>
+
+<p> The different layers of red represent the number of times it is encrypted.  <span class="lightred">Light Red</span> is encrypted once.  <span class="darkred">Dark Red</span> must be sent through two decryptions before the plaintext is ledgible. The ciphertext is encrypted in <a href="https://en.wikipedia.org/wiki/Block_cipher_modes_of_operation#Cipher-block_chaining_.28CBC.29">Cipher Block Chaining Mode</a>, which allows us to made small modifications to ciphertext that have small modifications to the plaintext.  It's not as precise as we'd like - flipping a single bit will entirely corrupt the 8 bytes of that data block, but it will flip the corresponding bit of the subsequant data block.  Let's zero in on the second Mix Header, and illustrate the data blocks.</p>
+
+<style type="text/css">
+.wholeblock, .leftblock, .rightblock, .middleblock {
+    margin:2px;
+    border: solid;
+    border-color: red;
+}
+.wholeblock {
+    border-width: 1px;
+}
+.leftblock {
+    border-width: 1px 0px 1px 1px;
+}
+.rightblock {
+    border-width: 1px 1px 1px 0px;
+}
+.middleblock {
+    border-width: 1px 0px 1px 0px;
+}
+#two_header2 .wholeblock, #two_header2 .leftblock, #two_header2 .rightblock, #two_header2 .middleblock {
+    border-color: blue;
+}
+.bluebg {
+    background-color:blue;
+}
+.redbg {
+    background-color:red;
+}
+</style>
+
+<pre>
+<fieldset id="two_header2"><legend>Mix Header 2</legend>Public Key ID (16 bytes)   <span class="wholeblock">0xABCDABCD 0xABCDABCD</span> <span class="wholeblock">0xABCDABCD 0xABCDABCD</span>
+Length of RSA Enc-ed Data  <span class="leftblock">0xF0</span>
+<span id="two_header2_rsasessionkey">RSA Encrypted Session Key  <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+         (128 bytes)       <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span></span>     
+Initialization Vector      <span class="rightblock">0x09090909 0x090909</span><span class="leftblock">09
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       <span class="rightblock">0x87214365 0x872143</span><span class="wholeblock">65 0x87214365 0x872143</span><span class="leftblock">65</span>
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span></span>
+Packet Type Identifier     <span class="middleblock">0x01</span>
+Packet Information
+Message ID (16 bytes)      <span class="rightblock">0x31537597 0x3153</span><span class="wholeblock">7597 0x31537597 0x3153</span><span class="leftblock">7597</span>
+<span id="two_header1_enc_iv">Initialization Vector      <span class="rightblock">0x0A0A0A0A 0x0A0A</span><span class="leftblock">0A0A</span></span>
+Timestamp                  <span class="rightblock">0x30303030 0x0005</span><span class="leftblock">06</span>
+Message Digest             <span class="rightblock">0x11112222 0x111122</span><span class="wholeblock">22 0x11112222 0x111122</span><span class="leftblock">22</span>
+Padding                    <span class="rightblock">0x01020304 0x050607</span><span class="wholeblock">08 0x01020304 0x050607</span><span class="leftblock">08</span>
+                           (Fill to 328 Bytes..)
+</fieldset></fieldset></pre>
+
+<p>The blue block illustrate the blocks of data that will be encrypted in CBC mode.  Flipping a bit in one of these will corrupt the entire block, and flip the resulting bit in the following block.  However, remember we're dealing with multiple layers of encryption: the Encrypted Header Part is <em>also</em> encrypted, and its block offsets are different.</p>
+
+<pre>
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       <span class="wholeblock">0x87214365 0x87214365</span> <span class="wholeblock">0x87214365 0x87214365</span>
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       <span class="wholeblock">0xFE45FE45 0xFE45FE45</span>
+                           <span class="wholeblock">0xFE45FE45 0xFE45FE45</span>
+                           <span class="wholeblock">0xFE45FE45 0xFE45FE45</span></span>
+Packet Type Identifier     <span class="leftblock">0x01</span>
+Packet Information
+Message ID (16 bytes)      <span class="rightblock">0x31537597 0x315375</span><span class="wholeblock">97 0x31537597 0x315375</span><span class="leftblock">97</span>
+<span id="two_header1_enc_iv">Initialization Vector      <span class="rightblock">0x0A0A0A0A 0x0A0A0A</span><span class="leftblock">0A</span></span>
+Timestamp                  <span class="rightblock">0x30303030 0x000506</span>
+Message Digest             <span class="wholeblock">0x11112222 0x11112222</span> <span class="wholeblock">0x11112222 0x11112222</span>
+Padding                    <span class="wholeblock">0x01020304 0x05060708</span> <span class="wholeblock">0x01020304 0x05060708</span>
+                           (Fill to 328 Bytes..)
+</fieldset></pre>
+
+<p>Any byte we manipulate in the second Mix Header will corrupt that blue block of data entirely, and the corresponding byte in the subsequent block.  Every blue corrupted byte will corrupt any red blocks that contains the byte.  And the final red block will corrupt the subsequent red block.  And, we can't cause a corruption that renders the Encryption Key or IV irrecoverable - or we won't be able to decrypt the payload - we must choose carefully.</p>
+
+<h3>The Attack</h3>
+
+<p>Now to give in to the suspense ;) If we manipulate the last byte of the Message Digest we will perform a cascading corruption that does not affect the Key or IV.  First we manipulate that byte:</p>
+
+<pre>
+<fieldset id="two_header2"><legend>Mix Header 2</legend>Public Key ID (16 bytes)   <span class="wholeblock">0xABCDABCD 0xABCDABCD</span> <span class="wholeblock">0xABCDABCD 0xABCDABCD</span>
+Length of RSA Enc-ed Data  <span class="leftblock">0xF0</span>
+<span id="two_header2_rsasessionkey">RSA Encrypted Session Key  <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+         (128 bytes)       <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span></span>     
+Initialization Vector      <span class="rightblock">0x09090909 0x090909</span><span class="leftblock">09
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       <span class="rightblock">0x87214365 0x872143</span><span class="wholeblock">65 0x87214365 0x872143</span><span class="leftblock">65</span>
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span></span>
+Packet Type Identifier     <span class="middleblock">0x01</span>
+Packet Information
+Message ID (16 bytes)      <span class="rightblock">0x31537597 0x3153</span><span class="wholeblock">7597 0x31537597 0x3153</span><span class="leftblock">7597</span>
+<span id="two_header1_enc_iv">Initialization Vector      <span class="rightblock">0x0A0A0A0A 0x0A0A</span><span class="leftblock">0A0A</span></span>
+Timestamp                  <span class="rightblock">0x30303030 0x0005</span><span class="leftblock">06</span>
+Message Digest             <span class="rightblock">0x11112222 0x111122</span><span class="wholeblock">22 0x11112222 0x111122</span><span class="leftblock bluebg">22</span>
+Padding                    <span class="rightblock">0x01020304 0x050607</span><span class="wholeblock">08 0x01020304 0x050607</span><span class="leftblock">08</span>
+                           (Fill to 328 Bytes..)
+</fieldset></fieldset></pre>
+
+<p>On decryption this corrupts the entire block, and corrupts the appropriate byte in the subsequent block:</p>
+
+<pre>
+<fieldset id="two_header2"><legend>Mix Header 2</legend>Public Key ID (16 bytes)   <span class="wholeblock">0xABCDABCD 0xABCDABCD</span> <span class="wholeblock">0xABCDABCD 0xABCDABCD</span>
+Length of RSA Enc-ed Data  <span class="leftblock">0xF0</span>
+<span id="two_header2_rsasessionkey">RSA Encrypted Session Key  <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+         (128 bytes)       <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span>
+                           <span class="rightblock">0x12345678 0x123456</span><span class="wholeblock">78 0x12345678 0x123456</span><span class="leftblock">78</span></span>     
+Initialization Vector      <span class="rightblock">0x09090909 0x090909</span><span class="leftblock">09
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       <span class="rightblock">0x87214365 0x872143</span><span class="wholeblock">65 0x87214365 0x872143</span><span class="leftblock">65</span>
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span>
+                           <span class="rightblock">0xFE45FE45 0xFE45FE</span><span class="leftblock">45</span></span>
+Packet Type Identifier     <span class="middleblock">0x01</span>
+Packet Information
+Message ID (16 bytes)      <span class="rightblock">0x31537597 0x3153</span><span class="wholeblock">7597 0x31537597 0x3153</span><span class="leftblock">7597</span>
+<span id="two_header1_enc_iv">Initialization Vector      <span class="rightblock">0x0A0A0A0A 0x0A0A</span><span class="leftblock">0A0A</span></span>
+Timestamp                  <span class="rightblock">0x30303030 0x0005</span><span class="leftblock">06</span>
+Message Digest             <span class="rightblock">0x11112222 0x111122</span><span class="wholeblock">22 0x11112222 0x111122</span><span class="leftblock bluebg">22</span>
+Padding                    <span class="rightblock bluebg">0x01020304 0x050607</span><span class="wholeblock"><span class="bluebg">08</span> 0x01020304 0x050607</span><span class="leftblock">08</span>
+                           (Fill to 328 Bytes..)
+</fieldset>
+</fieldset>
+</pre>
+
+<p>Which in turn corrupts all blocks containing one of those bytes at the inner layer, and alters the following block in an unpredictable fashion:</p>
+
+<pre>
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend>Packet ID (16 bytes)       <span class="wholeblock">0x87214365 0x87214365</span> <span class="wholeblock">0x87214365 0x87214365</span>
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       <span class="wholeblock">0xFE45FE45 0xFE45FE45</span>
+                           <span class="wholeblock">0xFE45FE45 0xFE45FE45</span>
+                           <span class="wholeblock">0xFE45FE45 0xFE45FE45</span></span>
+Packet Type Identifier     <span class="leftblock">0x01</span>
+Packet Information
+Message ID (16 bytes)      <span class="rightblock">0x31537597 0x315375</span><span class="wholeblock">97 0x31537597 0x315375</span><span class="leftblock">97</span>
+<span id="two_header1_enc_iv">Initialization Vector      <span class="rightblock">0x0A0A0A0A 0x0A0A0A</span><span class="leftblock">0A</span></span>
+Timestamp                  <span class="rightblock">0x30303030 0x000506</span>
+Message Digest             <span class="wholeblock">0x11112222 0x11112222</span> <span class="wholeblock redbg">0x11112222 0x11112222</span>
+Padding                    <span class="wholeblock redbg">0x01020304 0x05060708</span> <span class="wholeblock redbg">0x01020304 0x05060708</span>
+                           (Fill to 328 Bytes..)
+</fieldset>
+</pre>
+
+<p>So after decryption, the third node will have a message digest that is half-valid and half-invalid.  If the attacker recieves a message in that form, they are able to recognize it as a message they tagged in the first hop.  They are still able to decrypt the Mix Payload because, crucially, we did not cause any corruption to the Triple DES key or Initialization Vector. <span class="footnote">It is also possible there was a legitimate corruption during transit, but lower layer checksums make that improbable.</span></p>
+
+<p>If you'd like to follow this attack in greater detail, code demonstrating it is available on <a href="">github</a>.  It makes heavy use of the unfinished Python Mixmaster implementation <a href="https://github.com/cryptodotis/mixfaster">Mixfaster</a>.  Here's what it looks like when you run it (output minified a tad):</p>
+
+<pre>
+$ ./demo.py
+Client sends message with a Path of Node1,Node2,Node3
+  by pure luck (or unluck) Nodes 1 and 3 are attacker-controlled
+======================================================================
+Received Message on Node 1, processing...
+Message recieved by Node 1, decrypted, and decoded:
+        Packet Header ---------------------------
+         Public Key Id: 72f00ecf4f4e3af64d19772d4dd7d620
+         PacketType: IntermediateHop (0)
+         Timestamp:  Sun Oct 21 20:00:00 2012
+         Remailer Address: node2@example.com
+        ...
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Performing Tagging Attack
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Sending Message on to Node 2...
+======================================================================
+Received Message on Node 2, processing...
+Message recieved by Node 2, decrypted, and decoded:
+        Packet Header ---------------------------
+         Public Key Id: 24a17d807994cffbe65fdc6ce13d3562
+         PacketType: IntermediateHop (0)
+         Timestamp:  Tue Oct 23 20:00:00 2012
+         Remailer Address: node3@example.com
+        ...
+Sending Message on to Node 3...
+======================================================================
+Received Message on Node 3, processing...
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Caught a Decoding Exception! Continuing Anyway...
+Actual Digest   b496224032ec197aaa27ba3632e6f127
+Included Digest b496224032ec197a925d5f463ffa7da8
+                |______________||______________|
+                     Matches       Corrupted
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Message recieved by Node 3, decrypted, and decoded:
+        Packet Header ---------------------------
+         Public Key Id: f3372c7effb5887858460b7ed2faab91
+         PacketType: FinalHop (1)
+         Timestamp:  Sun Oct 21 20:00:00 2012
+        Packet Body -----------------------------
+         Data Length       : 229
+         Destination Fields: 1
+            john@nytimes.com
+         Header Fields     : 1
+            Subject: Confidential Information
+         User Data Type    : Plain (3)
+         User Data:
+
+           This is a sample mixmaster message demonstrating tagging attacks.
+</pre>
+
+<h3>Conclusion</h3>
+ 
+<p>The flaw in Mixmaster is that there is no integrity protection of the Mix Headers or Payload as they cross nodes.  A node is able to verify that the Mix Header <em>it</em> processes has not been altered (at least up to the Padding) - but cannot make the same statement about the <em>other</em> Mix Headers or the Payload.  So we modify a Header intended for Node 3 as the message leaves Node 1, Node 2 will pass it on (unaware it's been tampered), and Node 3 recognizes the tampering.</p>
+
+<p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</p>
+
+{% end %}

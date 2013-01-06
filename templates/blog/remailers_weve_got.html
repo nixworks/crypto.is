@@ -1,0 +1,55 @@
+{% extends "../blogbase.html" %}
+
+{% block content %}
+<h1>Remailers We've Got</h1>
+<div class="blogdate">05 Jan 2013 23:45:00 EST</div>
+
+<style type="text/css">
+.packet {
+    font-style: italic;
+    font-variant: small-caps;
+    font-family: monoscape;
+}
+.footnote:before {
+    content: 'Footnote: '
+}
+.footnote {
+    font-style: italic;
+    font-size: small;
+    font-family: Cambria,'Palatino Linotype','Book Antiqua','URW Palladio L',serif;;
+}
+</style>
+
+<p>There are two main implemented remailer networks in operation: Mixmaster and Mixminion.  Mixmaster was written in the early 90s by Lance Cottrell, and was maintained for a number of years by Len Sassaman.  Mixminion was written in the early 2000s by Nick Mathewson, based on a research paper he wrote with George Danezis and Roger Dingledine.  A third, <a href="https://en.wikipedia.org/wiki/Cypherpunk_anonymous_remailer">Cypherpunk Remailers</a>, exists as well, although is mostly supported as a compatibility layer in the Mixmaster software.  Although conceptually they all do the same thing - allow the sending of anonymous emails - there are a number of design and implementation differences.  </p>
+
+<p>In Mixmaster, when you compose your russian-doll nested messages to each remailer, you will send the message to the first node using normal email - SMTP.  Each node will subsequently send it to each following node using an email message over SMTP.</p>
+
+<img src="/static/blog/post2/mixmaster.png" style="border:black solid 1px; padding:3px; margin-left:auto; margin-right:auto; display:block" />
+
+<p>There disadvantages of this.  </p>
+<ul>
+ <li><em>The SMTP conversation between you and the first node is not encrypted</em>.  An attacker observing you would know you are sending messages to a remailer, even if they did not know remailers existed, or had a list of them.  <span class="footnote">It's important to note that the message is still encrypted, but the transport of the encrypted message is not itself encrypted.</span></li>
+ <li><em>The SMTP conversation between each node is not encrypted</em>.  This allows an attacker to observe the encrypted messages sent between.  The attacker could store the encrypted messages for later decryption if they compromise the server's private key.<span class="footnote">Again, the message is still encrypted, but the transport of the encrypted message is not itself encrypted.</span> <span class="footnote">There are some technicalitys with StartTLS and DHE ciphersuites, but these should not be relied on.</span></li>
+ <li><em>Each Mixmaster node must run an email server</em>. While running a webserver such as Apache or Nginx is very common today, and there are a lot of guides and best practices around doing so - running a mailserver today is more esoteric.  The guides are less common and more out of date - it is not a common skill.</li>
+</ul>
+ 
+<p>However, in Mixminion, when you compose your nested message, you will send the message to the first node using a binary protocol inside a SSL connection.  That SSL connection uses Ephemeral Encryption - which provides Perfect Forward Secrecy (PFS).  PFS means that if an attacker compromised the server's SSL certificate - they would not be able to decrypt that conversation.  And, if an attacker breaks that conversation - they cannot read any other conversation.  This is a very nice and robust property to provide, and by using SSL as a transport mechanism - we get it essentially for free, without having to write any additional code.</p>
+
+<img src="/static/blog/post2/mixminion.png" style="border:black solid 1px; padding:3px; margin-left:auto; margin-right:auto; display:block" />
+
+<p>The advantages of Mixminion's approach compared to Mixmaster's:</p>
+<ul>
+ <li><em>The conversation between you and the first node is encrypted using SSL</em>. Although an attacker who had a list of all remailer nodes would know you were speaking to one, and attacker who did not would see a normal SSL connection, extremely common on the web. <span class="footnote">With additional development, it would be possible to deploy 'bridge' Mixminion nodes, similar to Tor bridges, that an adversary was unable to enumerate.</span></li>
+ <li><em>The conversation between you and each node is encrypted with SSL using an ephemeral handshake.</em> And attacker who observed the conversation can only know they are transmitting remailer messages if they know the computers are remailers a priori. Because the conversation is encrypted ephemerally, an attacker cannot coerce an operator to decrypt a traffic intercept later.  </li>
+ <li><em>Only the exit Mixminion node must run an email server</em>. Because the nodes pass messages between themselves using a binary protocol inside of SSL, and not via email messages, the only node that must run an email server is the final node when the message exits the remailer network and enters normal email.  While some Mimixion nodes must run email servers, many do not need to.</li>
+</ul>
+ 
+<p>Another major difference between Mixmaster and Mixminion is that Mixmaster is one-way.  You can send an email anonymously to an individual, but if you want them to be able to reply, you would have to give them a reply address.  Even if you choose a free email service and lie to them about your real name - this can still de-anonymize you, for example through a subpoena to the email provider.  Mixminion however allows replies through what are called 'Single Use Reply Blocks' or SURBs.  When I receive a message with a SURB, I can reply to the sender without know who the sender is.  We'll talk more about SURBs and reply-block based designs later also.</p>
+
+<p>There are a number of other differences between Mixmaster and Mixminion, including directory services, exit policies, dummy traffic.  And there are a number of other topics and developments in anonymous email including packet formats (like Sphinx) and nym-based reply methods (like Pynchon Gate).  We'll be covering more about these topics in the future.</p>
+
+<p>Finally, before signing off, it's important to note that there are practical issues with both Mixmaster and Mixminion today.  Neither one of these should be relied on for strong anonymity.  Mixmaster, for example, makes use of 1024-bit RSA keys; and Mixminion has not been actively developed for years.</p>
+
+<p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</p>
+
+{% end %}

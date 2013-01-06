@@ -1,0 +1,742 @@
+{% extends "../blogbase.html" %}
+
+{% block content %}
+<h1>Packet Formats 1 of 3(?)</h1>
+<div class="blogdate">05 Jan 2013 23:47:00 EST</div>
+
+<script type="text/javascript" src="/static/blog/post4/jquery-ui-1.9.0.custom.min.js"></script>  
+<script type="text/javascript" src="/static/blog/post4/jquery.scrollto.js"></script>  
+<link rel="stylesheet" href="/static/blog/post4/jquery-ui.css" />
+    
+<style type="text/css">
+#navfloat {
+	position:fixed;
+	top:150px;
+	left: 0px;
+	border-width: 1px 1px 1px 0px;
+	border-color: black;
+	border-style: solid;
+	background-color:white;
+    display: none;
+}
+#navfloat ul {
+	margin-left:0px;
+    padding-left:5px;
+    padding-right:5px;
+    margin-top: -10px;
+}
+#navfloat ul li{
+    margin-top:15px;
+    cursor: hand;
+    text-syle: normal;
+}
+.disabledNav {
+    cursor: default !important;
+    opacity: 0.4 !important;
+    filter: alpha(opacity=40) !important;
+}
+
+.packet {
+    font-style: italic;
+    font-variant: small-caps;
+    font-family: monoscape;
+}
+pre {
+    padding-left:30px;
+}
+.footnote:before {
+    content: 'Footnote: '
+}
+.footnote {
+    font-style: italic;
+    font-size: small;
+    font-family: Cambria,'Palatino Linotype','Book Antiqua','URW Palladio L',serif;;
+}
+</style>
+
+<p>A remailer's packet format is the format of the data it passes to the next remailer.  The packet format is somewhat independent of the remailer transport protocol itself - just as a letter is independent of how you recieve it.  A courier can hand-deliver a letter to you, it can be dropped in your mailbox by a stranger, or the Postal Service can deliver it.  But once you've actually recieved it, you can open it, read it, and take action based on it.</p>
+
+<p>Although packet formats are independent of remailer transport protocol, most remailers do not process more than one type of format.  While I initially wanted to create a single blog post covering all the major packet formats - that proved to be extremely long, so it's going to be split up across a couple blog posts.  This first one will cover the Mixmaster packet format, as used in the Mixmaster remailer network.</p>
+
+<h2>Mixmaster Format</h2>
+
+<p>The mixmaster packet format is detailed in <a href="">mixmaster-spec.txt</a> and can be described as 20 <strong>Mix Headers</strong> followed by a <strong>Mix Paylod</strong>.  The first Mix Header is encrypted to your public key - you can decrypt it and learn where to send the rest of the data.  If the message is a Final Hop, you will be able to decrypt the Payload, and send it to the final destination. </p>
+
+<p>If the message is not a Final Hop - if it is an Intermediate Hop - you will find the address of the next remailer in the chain.  Before sending it on, you will decrypt all subsequent Headers (numbers 2 - 20) and the Payload - but you will not find any meaningfull data, as they are encrypted multiple times, in an onion, to keys you don't know.  The following animated examples should demonstrate the layering:</p>
+
+<div id="mixmaster_accordian">
+<!-- ========================================================================================= -->
+<!-- ========================================================================================= -->
+<h3>Mixmaster Final Message, As Seen by the Final Hop</h3>
+<div>
+<script type="text/javascript">
+var generalDuration = 3000;
+
+var animationSequence = [];
+var animationIndex = 0;
+var animationRunning = false;
+
+function animationComplete() {
+	animationRunning = false;
+	
+    console.log("Animation Complete");
+    
+    $('#navfloat').animate({
+            left: '0',
+        }, {
+            duration: 500
+        });
+    
+    if(animationIndex == animationSequence.length - 1)
+	{
+        $('#navprev').removeClass('disabledNav');
+        $('#navclose').removeClass('disabledNav');
+    }
+    else
+    {
+        $('#navfloat ul li').removeClass('disabledNav');
+    }
+}
+function animate_prev() {
+	if(animationIndex == 0) return;
+	if(animationRunning) return;
+	
+	animationIndex--;
+	animationSequence[animationIndex](true);
+}
+function animate_next() {
+	if(animationIndex == animationSequence.length - 1) return;
+	if(animationRunning) return;
+	
+	animationIndex++;
+	animationRunning = true;
+    $('#navfloat ul li').addClass('disabledNav');
+    $('#navfloat').animate({
+            left: '-250',
+        }, {
+            duration: 500
+        });
+	animationSequence[animationIndex]();
+}
+function animate_close() {
+	animationSequence[0]();
+	animationIndex = 0;
+	animationSequence = [];
+	animationRunning = false;
+    $('#navfloat').css('display', 'none');
+}
+function animationSetup() {
+    animationIndex = 1;
+    animationRunning = false;
+    $('#arrow').css('display', 'none');
+	
+    $('#navfloat').css('display', 'block');
+    $('#navfloat ul li').removeClass('disabledNav');
+    $('#navprev').addClass('disabledNav');
+}
+function scrollToArrow() {
+    $.scrollTo($('#arrow'), 500, {axis:'y', offset:-75});
+}
+</script>
+<script type="text/javascript">
+function animateOne_reset()
+{
+	$('#btn_animateone').css('visibility', '');
+    $('#one_header1_enc').css({'border-color' : '', 'background':'', 'color':''});
+    $('#one_header1_enc legend').css({'color':'black'});
+    
+    $('#one_header1_enc_tdes, #one_header1_enc_iv, #one_header1_iv, #one_header1_decryptsto, #one_header1_rsasessionkey').css('color', '');
+    $('#one_header1_decryptsto').css({'visibility': ''});
+    
+    $('#one_payload').css({'border-color' : '', 'background':'', 'color':''});
+    $('#one_payload legend').css({'color':''});
+	
+	$('#arrow').css('display', 'none');
+	animationRunning = false;
+}
+function animateOne_setup()
+{
+	animationSequence = animateOne;
+    $('#btn_animateone').css('visibility', 'hidden');
+    $('#one_header1_enc').css({'border-color' : 'red', 'background':'pink', 'color':'pink'});
+    $('#one_header1_enc legend').css({'color':'black'});
+    
+    $('#one_header1_enc_tdes, #one_header1_enc_iv, #one_header1_iv, #one_header1_decryptsto, #one_header1_rsasessionkey').css('color', '');
+    $('#one_header1_decryptsto').css({'visibility': 'hidden'});
+    
+    $('#one_payload').css({'border-color' : 'blue', 'background':'lightblue', 'color':'lightblue'});
+    $('#one_payload legend').css({'color':'black'});
+	
+	animationSetup();
+}
+function animateOne_1(backwards)
+{
+    $('#arrow').css('display', 'block');
+    $('#arrow span').text('This is the Mix Message.  The hidden parts are encrypted.');
+    $('#arrow').position({
+        of:$('#one legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+		
+	$('#one_header1_rsasessionkey').css('color', '');
+	animationComplete();
+}
+function animateOne_2(backwards)
+{
+    $('#arrow span').text('First, Decrypt the Session Key with your RSA Private Key');
+    $('#arrow').position({
+        of:$('#one_header1_rsasessionkey'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#one_header1_rsasessionkey').animate({
+            color: '#bca510',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: function() { $('#one_header1_decryptsto').css('visibility', 'visible'); animationComplete(); }
+        });
+	$('#one_header1_decryptsto').css('visibility', 'hidden');
+	$('#one_header1_decryptsto, #one_header1_iv').css('color', '');
+}
+function animateOne_3(backwards) 
+{
+    $('#arrow span').text('Use the Session Key and IV...')
+    $('#arrow').position({
+        of:$('#one_header1_decryptsto'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    
+    $('#one_header1_decryptsto, #one_header1_iv').animate({
+            color: 'red',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#one_header1_enc').css({'color':'pink'});
+}
+function animateOne_4(backwards)
+{
+    $('#arrow span').text('To Decrypt the Encrypted Header')
+    $('#arrow').position({
+        of:$('#one_header1_enc legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#one_header1_enc').animate({
+            color: 'black',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#one_header1_enc_tdes, #one_header1_enc_iv').css('color','');
+}
+function animateOne_5(backwards)
+{
+    $('#arrow span').text('Use the Triple DES Key and IV...')
+    $('#arrow').position({
+        of:$('#one_header1_enc_tdes'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#one_header1_enc_tdes, #one_header1_enc_iv').animate({
+            color: 'blue',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#one_payload').css({'color': 'lightblue'});
+	$('#btn_animateone').css('visibility', 'hidden');
+}
+function animateOne_6(backwards)
+{
+    $('#arrow span').text('To Decrypt the Payload ');
+    $('#arrow').position({
+        of:$('#one_payload legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10
+        });
+    scrollToArrow();
+    $('#one_payload').animate({
+            color: 'black',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+    $('#btn_animateone').css('visibility', '');
+}
+
+var animateOne = [animateOne_reset, animateOne_setup, animateOne_1, animateOne_2, animateOne_3, animateOne_4, animateOne_5, animateOne_6];
+</script>
+<input type="button" onclick="animateOne_setup();" id="btn_animateone" value="Animate"/>
+
+<pre><fieldset id="one"><legend>Mixmaster Final Message, As Seen by the Final Hop</legend><fieldset  id="one_headers"><legend>Mix Headers</legend><fieldset id="one_header1"><legend>Mix Header 1</legend>Public Key ID (16 bytes)   0xABCDABCD 0xABCDABCD 0xABCDABCD 0xABCDABCD
+Length of RSA Enc-ed Data  0xF0
+<span id="one_header1_rsasessionkey">RSA Encrypted Session Key  0x12345678 0x12345678 0x12345678 0x12345678
+         (128 bytes)       0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678</span>     
+                           <span id="one_header1_decryptsto">Decrypts To: 0xDABCDABC 0xDABCDABC 0xDABCDABC</span>
+<span id="one_header1_iv">Initialization Vector      0x09090909 0x09090909</span>
+<fieldset id="one_header1_enc"><legend>Encrypted Header Part</legend>
+Packet ID (16 bytes)       0x87214365 0x87214365 0x87214365 0x87214365
+<span id="one_header1_enc_tdes">TDES Key  (24 bytes)       0xFE45FE45 0xFE45FE45 
+                           0xFE45FE45 0xFE45FE45
+                           0xFE45FE45 0xFE45FE45</span>
+Packet Type Identifier     0x01
+Packet Information
+Message ID (16 bytes)      0x31537597 0x31537597 0x31537597 0x31537597
+<span id="one_header1_enc_iv">Initialization Vector      0x0A0A0A0A 0x0A0A0A0A</span>
+Timestamp                  0x30303030 0x000506
+Message Digest             0x11112222 0x11112222 0x11112222 0x11112222
+Padding                    0x01020304 0x05060708 (Fill to 328 Bytes..)
+</fieldset></fieldset><fieldset id="one_headers2"><legend>Mix Headers 2-20</legend>Random Data (512 bytes)    0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           ....
+</fieldset></fieldset><fieldset id="one_payload"><legend>Mix Payload</legend>Length                     0x12 0x10 0x00 0x00
+# of Destination Fields    0x01
+Destination Fields         john@example.com 0x00 0x00 0x00  (Padded to 80 bytes)
+# of Header Fields         0x01
+Header Fields              Subject: Event Details 0x00 0x00 (Padded to 80 bytes)
+User Data Section          
+Message                    Hey John, 
+                           
+                           We're planning on started at 10 PM, so if you could
+                           show up at 9:00 to help set up, we'd appreciate it.
+                           
+                           Thanks,
+                           Staff
+                           0x00 0x00 0x00 0x00 0x00 (padded to 10236 bytes)
+</fieldset></fieldset></pre>
+</div>
+<!-- ========================================================================================= -->
+<!-- ========================================================================================= -->
+<h3>Mixmaster Intermediate Message, As Seen by an Intermediate Hop</h3>
+<div>
+<!-- ========================================================================================= -->
+<!-- ========================================================================================= -->
+<script type="text/javascript">
+function animateTwo_reset()
+{
+    $('#btn_animatetwo').css('visibility', '');
+    
+    $('#two_header1_decryptsto').css({'visibility':''});
+    $('#two_header1_enc').css({'border-color':'', 'background':'', 'color':''});
+    $('#two_header1_enc legend').css('color', '');
+    
+    $('#two_header2, #two_header2_enc, #two_headers3, #two_payload').css({'border-color':'', 'background':'', 'color':''});
+    $('#two_header2 legend, #two_headers3 legend, #two_payload legend').css('color', '');
+    $('#two_header1_rsasessionkey, #two_header1_enc_iv, #two_header1_enc_tdes, #two_header1_iv, #two_header1_decryptsto, #two_payload_inner').css('color', '');
+    
+    $('#two_header2_enc').css('visibility', '');
+    $('#two_header2_enc, #two_payload_inner').css({'background-color':''});
+
+    $('#two_payload_inner').css('visibility', '');
+	
+	$('#arrow').css('display', 'none');
+	animationRunning = false;
+}
+function animateTwo_setup()
+{
+    animationSequence = animateTwo;
+	$('#btn_animatetwo').css('visibility', 'hidden');
+    
+    $('#two_header1_decryptsto').css({'visibility':'hidden'});
+    $('#two_header1_enc').css({'border-color':'red', 'background':'pink', 'color':'pink'});
+    $('#two_header1_enc legend').css('color', 'black');
+    
+    $('#two_header2, #two_headers3, #two_payload').css({'border-color':'blue', 'background':'lightblue', 'color':'lightblue'});
+    $('#two_header2 legend, #two_headers3 legend, #two_payload legend').css('color', 'black');
+    
+    $('#two_header2_enc').css('visibility', 'hidden');
+    $('#two_payload_inner').css('visibility', 'hidden');
+    
+    animationSetup();
+}
+function animateTwo_1(backwards)
+{
+	$('#arrow').css('display', 'block');
+    $('#arrow span').text('This is the Mix Message.  The hidden parts are encrypted.');
+    $('#arrow').position({
+        of:$('#two legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+	$('#two_header1_rsasessionkey').css('color', '');
+	animationComplete();
+}
+function animateTwo_2(backwards)
+{
+    $('#arrow span').text('First, Decrypt the Session Key with your RSA Private Key');
+    $('#arrow').position({
+        of:$('#two_header1_rsasessionkey'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_header1_rsasessionkey').animate({
+            color: '#bca510',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: function() { $('#two_header1_decryptsto').css('visibility', ''); animationComplete(); }
+        });
+	$('#two_header1_decryptsto, #two_header1_iv').css('color', '');
+	$('#two_header1_decryptsto').css('visibility', 'hidden');
+}
+function animateTwo_3(backwards) 
+{
+    $('#arrow span').text('Use the Session Key and IV...')
+    $('#arrow').position({
+        of:$('#two_header1_decryptsto'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_header1_decryptsto').css('visibility', '');
+    $('#two_header1_decryptsto, #two_header1_iv').animate({
+            color: 'red',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#two_header1_enc').css('color', 'pink');
+}
+function animateTwo_4(backwards)
+{
+    $('#arrow span').text('To Decrypt the Encrypted Header')
+    $('#arrow').position({
+        of:$('#two_header1_enc legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_header1_enc').animate({
+            color: 'black',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#two_header1_enc_tdes, #two_header1_enc_iv').css('color', '');
+}
+function animateTwo_5(backwards)
+{
+    $('#arrow span').text('Use the Triple DES Key and IVs...')
+    $('#arrow').position({
+        of:$('#two_header1_enc_tdes'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_header1_enc_tdes, #two_header1_enc_iv').animate({
+            color: 'blue',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#two_header2_enc').css({'visibility':'hidden'});
+	$('#two_header2_enc').css({'background-color':''});
+	$('#two_header2').css('color', 'lightblue');
+}
+function animateTwo_6(backwards)
+{
+    $('#arrow span').text('To Decrypt the Next Mix Header (using IV1)')
+    $('#arrow').position({
+        of:$('#two_header2 legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_header2_enc').css({'visibility':'visible'});
+    $('#two_header2_enc').animate({
+            'background-color':'yellow'
+        }, {
+            duration: backwards ? 1 : generalDuration,
+        });
+    $('#two_header2').animate({
+            color: 'black',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#two_headers3').css('color', 'lightblue');
+}
+function animateTwo_7(backwards)
+{
+    $('#arrow span').text('To Decrypt each of the Next Mix Headers (using IVs 2-19)')
+    $('#arrow').position({
+        of:$('#two_headers3 legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_headers3').animate({
+            color: 'black',
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+	$('#two_payload_inner').css({
+		'visibility':'hidden',
+		'background-color':'',
+		'color':'lightblue'
+	});
+}
+function animateTwo_8(backwards)
+{
+    $('#arrow span').text('And finally to Decrypt the Payload (using IV 19)')
+    $('#arrow').position({
+        of:$('#two_payload legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#two_payload_inner').css({'visibility':''});
+    $('#two_payload_inner').animate({
+            'background-color':'purple',
+            'color':'white'
+        }, {
+            duration: backwards ? 1 : generalDuration,
+            complete: animationComplete
+        });
+}
+function animateTwo_9(backwards)
+{
+    $('#arrow span').text('But we can\'t decrypt this Payload...')
+    $('#arrow').position({
+        of:$('#two_payload_inner span'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+	animationComplete();
+}
+function animateTwo_10(backwards)
+{
+    $('#arrow span').text('Or this encrypted header part...')
+    $('#arrow').position({
+        of:$('#two_header2_enc span'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+	animationComplete();
+}
+function animateTwo_11(backwards)
+{
+    $('#arrow span').text('Or even make sense of the subsequent Mix Headers...')
+    $('#arrow').position({
+        of:$('#two_headers3 legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+	animationComplete();
+}
+function animateTwo_12(backwards)
+{
+    $('#arrow span').text('The Key to decrypt the yellow header part is encrypted to a Public Key we don\'t control')
+    $('#arrow').position({
+        of:$('#two_header2_rsasessionkey'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+	animationComplete();
+}
+function animateTwo_13(backwards)
+{
+    $('#arrow span').text('The key to decrypt the public parts of the next header is inside the yellow header part.')
+    $('#arrow').position({
+        of:$('#two_headers3 legend'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#btn_animatetwo').css('visibility', 'hidden');
+	animationComplete();
+}
+function animateTwo_14(backwards)
+{
+    $('#arrow span').text('And the key to decrypt the purple payload is either inside the yellow header part, or in a subsequant mix header (we can\'t be sure).')
+    $('#arrow').position({
+        of:$('#two_payload_inner span'),
+        my:'left center',
+        at:'right center', 
+        'collision':'none',
+        offet:10});
+    scrollToArrow();
+    $('#btn_animatetwo').css('visibility', '');
+	animationComplete();
+}
+var animateTwo = [animateTwo_reset, animateTwo_setup, animateTwo_1, animateTwo_2, animateTwo_3, animateTwo_4, animateTwo_5, animateTwo_6, animateTwo_7, animateTwo_8, animateTwo_9, animateTwo_10, animateTwo_11, animateTwo_12, animateTwo_13, animateTwo_14];
+</script>
+<input type="button" onclick="animateTwo_setup();" id="btn_animatetwo" value="Animate"/>
+
+<pre>
+<fieldset id="two"><legend>Mixmaster Final Message, As Seen by the Final Hop</legend>
+<fieldset id="two_headers"><legend>Mix Headers</legend>
+<fieldset id="two_header1"><legend>Mix Header 1</legend>
+Public Key ID (16 bytes)   0xABCDABCD 0xABCDABCD 0xABCDABCD 0xABCDABCD
+Length of RSA Enc-ed Data  0xF0
+<span id="two_header1_rsasessionkey">RSA Encrypted Session Key  0x12345678 0x12345678 0x12345678 0x12345678
+         (128 bytes)       0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678</span>     
+                           <span id="two_header1_decryptsto">Decrypts To: 0xDABCDABC 0xDABCDABC 0xDABCDABC</span>
+<span id="two_header1_iv">Initialization Vector      0x09090909 0x09090909</span>
+<fieldset id="two_header1_enc"><legend>Encrypted Header Part</legend>
+Packet ID (16 bytes)       0x87214365 0x87214365 0x87214365 0x87214365
+<span id="two_header1_enc_tdes">TDES Key  (24 bytes)       0xFE45FE45 0xFE45FE45 
+                           0xFE45FE45 0xFE45FE45
+                           0xFE45FE45 0xFE45FE45</span>
+Packet Type Identifier     0x02
+Packet Information
+<span id="two_header1_enc_iv">Initialization Vector1     0x0A0A0A0A 0x0A0A0A0A
+Initialization Vector2     0x0B0A0A0A 0x0B0A0A0A
+Initialization Vector3     0x0C0A0A0A 0x0C0A0A0A
+Initialization Vector4     0x0D0A0A0A 0x0D0A0A0A
+Initialization Vector5     0x0E0A0A0A 0x0E0A0A0A
+Initialization Vector6     0x0F0A0A0A 0x0F0A0A0A
+Initialization Vector7     0x1A0A0A0A 0x1A0A0A0A
+Initialization Vector8     0x1B0A0A0A 0x1B0A0A0A
+Initialization Vector9     0x1C0A0A0A 0x1C0A0A0A
+Initialization Vector10    0x1D0A0A0A 0x1D0A0A0A
+Initialization Vector11    0x1F0A0A0A 0x1F0A0A0A
+Initialization Vector12    0x2A0A0A0A 0x2A0A0A0A
+Initialization Vector13    0x2B0A0A0A 0x2B0A0A0A
+Initialization Vector14    0x2C0A0A0A 0x2C0A0A0A
+Initialization Vector15    0x2D0A0A0A 0x2D0A0A0A
+Initialization Vector16    0x2E0A0A0A 0x2E0A0A0A
+Initialization Vector17    0x2F0A0A0A 0x2F0A0A0A
+Initialization Vector18    0x3A0A0A0A 0x3A0A0A0A
+Initialization Vector19    0x3B0A0A0A 0x3B0A0A0A</span>
+Remailer Address           exitremailer@exam.com 0x00 0x00 (Padded to 80 bytes)
+Timestamp                  0x30303030 0x000506
+Message Digest             0x11112222 0x11112222 0x11112222 0x11112222
+Padding                    0x01020304 0x05060708 (Fill to 328 Bytes..)
+</fieldset>
+</fieldset>
+<fieldset id="two_header2"><legend>Mix Header 2</legend>
+Public Key ID (16 bytes)   0xABCDABCD 0xABCDABCD 0xABCDABCD 0xABCDABCD
+Length of RSA Enc-ed Data  0xF0
+<span id="two_header2_rsasessionkey">RSA Encrypted Session Key  0x12345678 0x12345678 0x12345678 0x12345678
+         (128 bytes)       0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678
+                           0x12345678 0x12345678 0x12345678 0x12345678</span>     
+Initialization Vector      0x09090909 0x09090909
+<fieldset id="two_header2_enc"><legend>Encrypted Header Part</legend><span>Indecipherable Data</span></fieldset>
+</fieldset>
+</fieldset>
+<fieldset id="two_headers3"><legend>Mix Headers 3-20</legend>Indecipherable Data        0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE 0xEEEEEEEE
+                           ....
+</fieldset>
+<fieldset id="two_payload"><legend>Mix Payload</legend><fieldset id="two_payload_inner"><span>Indecipherable Data</span></fieldset></fieldset></fieldset>
+</pre>
+</div>
+</div>
+
+<h3>Transport</h3>
+
+<p>The above is the binary format of the protocol.  The mixmaster packets are then encoded as follows before transit:</p>
+
+<pre>::
+Remailer-Type: Mixmaster [version number]
+
+-----BEGIN REMAILER MESSAGE-----
+[packet length ]
+[message digest]
+[encoded packet]
+-----END REMAILER MESSAGE-----</pre>
+
+<p>Because the Mix Payload is padded to a constant size, and there are always 20 Mix Headers, a Mix Message is a constant size, and the packet length field is always 20480.  The Message Digest is computed over the encrypted, binary representation of the Mix Headers+Payload and then base64-ed.  Finally, the binary headers+payload themselves are encoded in base64 and broken into lines of 40 characters.</p>
+
+<h3>Notes</h3>
+
+<p>Some other notes about the Mixmaster Packet Format, tersely:
+
+<ul>
+<li>The Mix Payload packet is a constant 10236 bytes (plus 4 bytes length) - any message larger than that must be split into message chunks (which will be talked more about in another blog post.)  But any message smaller than that is still padded to that size.</li>
+<li>Obviously, there is only room for 20 Mix Headers, so the maximum hop length of a Mixmaster message is 20 hops.</li>
+<li>The format conceals the lenth of the path from each intermediate hop - if you're not the final hop, you don't know how many more hops there are.</li>
+<li>The raw packet format, shown above, has many distinct markers, making it easy to reliably detect it in transit.  (This is especially bad for Mixmaster, do you know why?  Hint: check out the <a href="">second blog post</a>.)</li>
+<li>The algorithm and key lengths are hardcoded into the specification, with no room for alternation.  Thus we are stuck with
+    <ul>
+    <li>RSA 1024 with PKCS #1 v1.5 Padding</li>
+    <li>EDE Triple DES in CBC Mode</li>
+    <li>MD5 as Message Digest Algorithm</li>
+    </ul>
+<li>Replay prevention is often built into the packet format, at least partly.  In the Mixmaster specification, a server keeps track of all Message IDs seen so far, and if it sees an identical one, will discard the message as a replay.  Mixmaster must expire old message ids eventually, and so a message can be replayed if the server has expired the massage id.  However, the primary implementation of mixmaster also encodes a date into the message id, to aid it against this attack. We'll talk more about replay attacks in a future blog post also.</li>
+<li>The format is vulnerable to Tagging Attacks, which I'll go over in more detail with an example in a future blog post.</li>
+</ul>
+</p>
+
+
+
+<script type="text/javascript">
+$("#mixmaster_accordian").accordion({
+    collapsible: true,
+    active: false,
+    heightStyle: 'content',
+    beforeActivate: function(event, ui) {
+        $('#arrow').css('display', 'none');
+    }});
+</script>
+
+<p><em style="font-size:small;">This blog post is licensed under <a href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States License</a> and is inspired by, and makes heavy use of, the images produced by the EFF & Tor Project <a href="https://www.torproject.org/about/overview.html.en">here</a>.</p>
+
+<div style="display:none" id="arrow"><img src="/static/blog/post4/arrow.gif" style="vertical-align:middle;"/><span style="font-weight:bold;font-size:large;padding:3px;border:1px dashed grey;background:white;">Testing Words</span></div>
+
+<div id="navfloat">
+    <ul>
+    <li class="" id="navprev" onclick="animate_prev();"><img src="/static/blog/post4/back.png" />Previous Step</li>
+	<li class="" id="navclose" onclick="animate_close();"><img src="/static/blog/post4/down.png" />Close</li>
+	<li class="" id="navnext" onclick="animate_next();"><img src="/static/blog/post4/forward.png" />Next Step</li>
+    </ul>
+</div>
+
+{% end %}
