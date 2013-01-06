@@ -4,6 +4,8 @@
 <h1>Packet Formats 1 of 3(?)</h1>
 <div class="blogdate">05 Jan 2013 23:47:00 EST</div>
 
+<p style="text-align:center"><em>While most of crypto.is will function without javascript, this blog post is an exception.</em></p>
+
 <script type="text/javascript" src="/static/blog/post4/jquery-ui-1.9.0.custom.min.js"></script>  
 <script type="text/javascript" src="/static/blog/post4/jquery.scrollto.js"></script>  
 <link rel="stylesheet" href="/static/blog/post4/jquery-ui.css" />
@@ -60,7 +62,7 @@ pre {
 
 <h2>Mixmaster Format</h2>
 
-<p>The mixmaster packet format is detailed in <a href="">mixmaster-spec.txt</a> and can be described as 20 <strong>Mix Headers</strong> followed by a <strong>Mix Paylod</strong>.  The first Mix Header is encrypted to your public key - you can decrypt it and learn where to send the rest of the data.  If the message is a Final Hop, you will be able to decrypt the Payload, and send it to the final destination. </p>
+<p>The mixmaster packet format is detailed in <a href="http://www.freehaven.net/anonbib/cache/mixmaster-spec.txt">mixmaster-spec.txt</a> and can be described as 20 <strong>Mix Headers</strong> followed by a <strong>Mix Paylod</strong>.  The first Mix Header is encrypted to your public key - you can decrypt it and learn where to send the rest of the data.  If the message is a Final Hop, you will be able to decrypt the Payload, and send it to the final destination. </p>
 
 <p>If the message is not a Final Hop - if it is an Intermediate Hop - you will find the address of the next remailer in the chain.  Before sending it on, you will decrypt all subsequent Headers (numbers 2 - 20) and the Payload - but you will not find any meaningfull data, as they are encrypted multiple times, in an onion, to keys you don't know.  The following animated examples should demonstrate the layering:</p>
 
@@ -702,7 +704,7 @@ Remailer-Type: Mixmaster [version number]
 <li>The Mix Payload packet is a constant 10236 bytes (plus 4 bytes length) - any message larger than that must be split into message chunks (which will be talked more about in another blog post.)  But any message smaller than that is still padded to that size.</li>
 <li>Obviously, there is only room for 20 Mix Headers, so the maximum hop length of a Mixmaster message is 20 hops.</li>
 <li>The format conceals the lenth of the path from each intermediate hop - if you're not the final hop, you don't know how many more hops there are.</li>
-<li>The raw packet format, shown above, has many distinct markers, making it easy to reliably detect it in transit.  (This is especially bad for Mixmaster, do you know why?  Hint: check out the <a href="">second blog post</a>.)</li>
+<li>The raw packet format, shown above, has many distinct markers, making it easy to reliably detect it in transit.  (This is especially bad for Mixmaster, do you know why?  Hint: check out the <a href="https://crypto.is/blog/remailers_weve_got">second blog post</a>.)</li>
 <li>The algorithm and key lengths are hardcoded into the specification, with no room for alternation.  Thus we are stuck with
     <ul>
     <li>RSA 1024 with PKCS #1 v1.5 Padding</li>
