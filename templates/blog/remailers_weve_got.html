@@ -40,8 +40,8 @@
 
 <p>The advantages of Mixminion's approach compared to Mixmaster's:</p>
 <ul>
- <li><em>The conversation between you and the first node is encrypted using SSL</em>. Although an attacker who had a list of all remailer nodes would know you were speaking to one, and attacker who did not would see a normal SSL connection, extremely common on the web. <span class="footnote">With additional development, it would be possible to deploy 'bridge' Mixminion nodes, similar to Tor bridges, that an adversary was unable to enumerate.</span></li>
- <li><em>The conversation between you and each node is encrypted with SSL using an ephemeral handshake.</em> And attacker who observed the conversation can only know they are transmitting remailer messages if they know the computers are remailers a priori. Because the conversation is encrypted ephemerally, an attacker cannot coerce an operator to decrypt a traffic intercept later.  </li>
+ <li><em>The conversation between you and the first node is encrypted using SSL</em>. Although an attacker who had a list of all remailer nodes would know you were speaking to one, an attacker who did not would see a normal SSL connection, extremely common on the web. <span class="footnote">With additional development, it would be possible to deploy 'bridge' Mixminion nodes, similar to Tor bridges, that an adversary was unable to enumerate.</span></li>
+ <li><em>The conversation between each node is encrypted with SSL using an ephemeral handshake.</em> An attacker who observed the conversation can only know they are transmitting remailer messages if they know the computers are remailers a priori. Because the conversation is encrypted ephemerally, an attacker cannot coerce an operator to decrypt a traffic intercept later.  </li>
  <li><em>Only the exit Mixminion node must run an email server</em>. Because the nodes pass messages between themselves using a binary protocol inside of SSL, and not via email messages, the only node that must run an email server is the final node when the message exits the remailer network and enters normal email.  While some Mimixion nodes must run email servers, many do not need to.</li>
 </ul>
  
