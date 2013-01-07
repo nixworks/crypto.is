@@ -2,7 +2,8 @@
 
 {% block content %}
 <h1>A Tagging Attack on Mixmaster</h1>
-<div class="blogdate">05 Jan 2013 23:48:00 EST</div>
+<h2 style="float:right; margin-top:-72px;margin-right:10px"><a href="/blog/">Index</a></h2>
+<div class="blogdate">05 Jan 2013 23:48:00 EST by <a href="https://ritter.vg">Tom Ritter</a></div>
 
 <style type="text/css">
 .packet {
@@ -279,7 +280,7 @@ Padding                    <span class="wholeblock redbg">0x01020304 0x05060708<
 
 <p>So after decryption, the third node will have a message digest that is half-valid and half-invalid.  If the attacker recieves a message in that form, they are able to recognize it as a message they tagged in the first hop.  They are still able to decrypt the Mix Payload because, crucially, we did not cause any corruption to the Triple DES key or Initialization Vector. <span class="footnote">It is also possible there was a legitimate corruption during transit, but lower layer checksums make that improbable.</span></p>
 
-<p>If you'd like to follow this attack in greater detail, code demonstrating it is available on <a href="">github</a>.  It makes heavy use of the unfinished Python Mixmaster implementation <a href="https://github.com/cryptodotis/mixfaster">Mixfaster</a>.  Here's what it looks like when you run it (output minified a tad):</p>
+<p>If you'd like to follow this attack in greater detail, code demonstrating it is available on <a href="https://github.com/tomrittervg/mixmaster-tagging-attack">github</a>.  It makes heavy use of the unfinished Python Mixmaster implementation <a href="https://github.com/cryptodotis/mixfaster">Mixfaster</a>.  Here's what it looks like when you run it (output minified a tad):</p>
 
 <pre>
 $ ./demo.py

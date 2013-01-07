@@ -1,11 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<h1 style="float:left">Blog</h1>
-	<h2 style="float:right"><a href="/blog/archive">Archives</a></h2>
+	<h1>Blog</h1>
 
-	<p style="clear:both"></p>
+	<p>Crypto.is kicks off its blog with a series of articles about remailers!  This is the first several installments in what is intended to be a series on how remailers work, the theory behind them, and many of the choices that must be considered. Some of the topics we intended to dive deeply into in the future is how to have a directory of remailer nodes, how to handle messages that overflow the packet size, more details on Mixminion, as-yet-unimplemented Academic Papers (like Pynchon Gate and Sphinx), and more!  Check out posts <a href="https://crypto.is/blog/what_is_a_remailer">One</a>, <a href="https://crypto.is/blog/remailers_weve_got">Two</a>, <a href="https://crypto.is/blog/tagging_attacks">Three</a>, <a href="https://crypto.is/blog/packet_formats_1">Four</a>, and <a href="https://crypto.is/blog/tagging_attack_on_mixmaster">Five</a>.  The comments section should work, so please do leave comments if you have questions, insights, or corrections!</p>
 
-	<p>We're aiming to get our blog up soon to tell you about the cool stuff we've been working on.  Hang tight, and check out <a href="https://twitter.com/cryptodotis">Twitter</a> and <a href="/about/">IRC</a></p>
+	<h2>Posts</h2>
+	
+	<p><img src="/static/img/feed-icon.png" /> <a href="https://crypto.is/static/news.xml">RSS Feed</a></p>
+
+        <table border="0" style="width:100%">
+          {% for p in posts %}
+          <tr>
+	    <td style="width:5%">{{ p[0] }}</td>
+	    <td style="width:47%"><a href="/blog/{{ p[3] }}">{{ p[1] }}</a></td>
+	    <td style="width:47%">{% raw p[2] %}</td>
+	  </tr>
+          {% end %}
+        </table>
+
 
 {% end %}
