@@ -72,5 +72,9 @@ class Application(tornado.web.Application):
 		tornado.web.Application.__init__(self, handlers, **settings)
 if __name__ == "__main__":
 	application = Application()
-	application.listen(8888)
+	import socket
+	if socket.has_ipv6:
+		application.listen(8888)
+	else:
+		application.listen(8888, address="0.0.0.0")
 	tornado.ioloop.IOLoop.instance().start()
