@@ -1,0 +1,77 @@
+{% extends "../blogbase.html" %}
+
+{% block content %}
+<h1>The Differences Between Onion Routing and Mix Networks</h1>
+<h2 style="float:right; margin-top:-72px;margin-right:10px"><a href="/blog/">Index</a></h2>
+<div class="blogdate">12 Apr 2013 16:52:00 EST by <a href="https://ritter.vg">Tom Ritter</a></div>
+
+<style type="text/css">
+.footnote:before {
+    content: 'Footnote: '
+}
+.footnote {
+    font-style: italic;
+    font-size: small;
+    font-family: Cambria,'Palatino Linotype','Book Antiqua','URW Palladio L',serif;;
+}
+</style>
+
+<p>As was pointed out in a recent <a href="/blog/what_is_a_remailer">comment on the first blog post</a>, I had used the terms "mix network" and "onion routing" almost interchangeably.  In actuality I had fallen into a trap that a fair number of people familiar with the space have fallen into: using those terms without a solid differentiation.  This blog post aims to correct that.</p>
+
+<p>Firstly, I must give credit where credit is due - Paul Syverson (one of the original authors of Tor) wrote the paper that cemented this in my head most clearly, and I will quote it, and then restate it with pictures:</p>
+
+<blockquote>
+
+<p>Mix networks get their security from the mixing done by their component
+mixes, and may or may not use route unpredictability to enhance security. Onion
+routing networks primarily get their security from choosing routes that are difficult 
+for the adversary to observe, which for designs deployed to date has meant
+choosing unpredictable routes through a network. And onion routers typically
+employ no mixing at all. This gets at the essence of the two even if it is a bit too
+quick on both sides. Mixes are also usually intended to resist an adversary that
+can observe all traffic everywhere and, in some threat models, to actively change
+traffic. Onion routing assumes that an adversary who observes both ends of a
+communication path will completely break the anonymity of its traffic. Thus,
+onion routing networks are designed to resist a local adversary, one that can
+only see a subset of the network and the traffic on it.</p>
+
+<p>- <a href="http://syverson.org/">Paul Syverson - Why I'm not an Entropist</a></p>
+</blockquote>
+
+<h3>Onion Routing</h3>
+
+<p>Onion Routing gets its security from the fact (or assumption) that it is difficult for an adversary to position itself on networks such that it is able to view <em>all</em> the nodes in the route.  Practically speaking, if I built a route from my job in China, to a server in Australia, to a server in Russia, to a server in Sweden, and then visit a webpage in France - there are a number of adversaries who could see part of this path. For example: my employer, my employer's Internet Service Provider, the Chinese, Australian, Russian, Swedish, and French Governments, the website operator and their Internet Service Provider. But none of those entities are able to see the entire path (we hope!) because they do not own, control, or have direct influence over every network link I'm using. In this instance, Onion Routing can provide some security.</p>
+
+<img src="/static/blog/post6/slide3.png">
+
+<h3>Onion Routing Attacked</h3>
+
+<p>But if an adversary is able to see the entire path, Onion Routing loses its security.  I recently used a crowd of people in a real-life demonstration of this. Alice puts a message into an opaque film canister, and passes it to an onion routing node, who passes it to another, who passes it to another, who takes the message out of the canister, and hands it to the recipient Bob.  Everyone in the room can clearly see that it was Alice who passed a message to Bob, and even if there were multiple messages being passed, anyone could focus on an individual, and watch where the film canister passed wound up.</p>
+
+<p>There's been rumors and talks in the past of China or Iran cutting themselves off from the Internet, and making their own national Internet.  If they did, we could not just stand up a Tor network inside the country: it would provide no security because the government would be able to see the entire path.</p>
+
+<img src="/static/blog/post6/slide4.png">
+
+
+<p>There is another scenario where Onion Routing is known to fall down. If the adversary can see one node (A), and later another node (C) - even if there is an unseen or unknown number of nodes between A and C, an attacker can correlate the traffic.  A specific instance of this means if an attacker can see you, and can see the website you're visiting, even if you create a path outside the adversary's control - they will still be able to correlate the traffic and learn you are visiting the website. This clearly raises concerns about using Onion Routing to visit a company website or websites related to your own government.</p>
+
+<img src="/static/blog/post6/slide5.png">
+
+<h3>Mix Networks</h3>
+
+<p>Mixing; however, is specifically designed to provide security even if an adversary can see the entire path. To demonstrate this to a crowd of people I had Alice, Bob, and Carol each submit messages, in opaque film canisters, into my mix node (my backpack).  With all three film canister messages in my bag, I shook it, and distributed each message to a new mix node, each of which also had a couple of messages in their bags already. Then those nodes distributed messages to 6 more mix nodes, and those mix nodes opened the messages and distributed them to recipients.  Although everyone was able to see all of the messages that were passed around - it's impossible to tell who got Alice's, Bob's, or Carol's specific message.  The mixing, in backpacks, creates uncertainty for the attacker they are not able to overcome.</p>
+
+<img src="/static/blog/post6/slide6.png">
+
+<p>Mixing isn't perfect.  An adversary can still conduct long term correlation attacks, and if no one or almost no one uses the mix network along with you - it's even easier to attack. Furthermore, just because mix networks provide stronger security against a stronger adversary does not mean they provide better security <em>in general</em>.  If you'd like to learn why, you can wait a while until I post about it, or just skip the middle man and read <em>Sleeping dogs lie on a bed of onions but wake when mixed</em> by <a href="http://www.syverson.org/">Paul Syverson</a>.</p>  
+
+<h3>More Differences</h3>
+
+<p>A Mix Node must collect more than one message before sending any out - otherwise the node is behaving as an onion router node with a time delay.  The more messages collected, the more uncertainty is introduced as to which message went where.  The specific mixing algorithms employed (often calling pooling algorithms) will be a subject of a future blog post, but it's clear there must be multiple messages, which means the collected messages will generally sit in a mix node until 'sufficient' messages are collected (for some definition of sufficient).  This introduces latency.  If a mix node waits six hours to collect messages - well that's up to six hours of latency.  Accordingly, mix networks are often casually referred to as 'high latency' and onion routing networks as 'low latency'.  But the latency doesn't impart security - it's the mixing.</p>
+
+<p>Tor is an Onion Routing network.  It employs no mixing, and barring normal system task scheduling and processing, messages are sent as soon as they are received. The attacks described against onion routing above can and have been shown to work against Tor. While there is no evidence a government has resorted to performing the types of statistical attacks described in Academic papers - they have done rudimentary correlation involving physical surveillance.  Specifically: they watched a suspect arrive home, they watched some Tor traffic originate from his home, and they watched as the nickname they suspected was him appeared in the IRC channel.  <span class="footnote">If you're curious, it can read more about that <a href="http://arstechnica.com/tech-policy/2012/03/stakeout-how-the-fbi-tracked-and-busted-a-chicago-anon/2/">over here</a>.</span> Although Tor is a powerful tool, it is possible to distinguish Tor traffic from normal traffic, and it is possible to perform correlation-based attacks to de-anonymize your use of it. </p>
+
+
+<p><em>Something to keep in mind is that deployed mix networks (Mixmaster, Mixminion) are not designed to disguise the fact that you are <u>using</u> a mix network. If an adversary can simply lock you up for using anonymity tools, you need to disguise your use of anonymity tools, which is a whole other topic. Similarly, these tools are relatively obscure, and if an adversary can simply look across a large quantity of email traffic looking for someone who has received a Mixmaster message, who had not previously, simple correlation may also be possible. </em></p>
+
+{% end %}
