@@ -712,7 +712,7 @@ Remailer-Type: Mixmaster [version number]
     <li>EDE Triple DES in CBC Mode</li>
     <li>MD5 as Message Digest Algorithm</li>
     </ul>
-<li>Replay prevention is often built into the packet format, at least partly.  In the Mixmaster specification, a server keeps track of all Message IDs seen so far, and if it sees an identical one, will discard the message as a replay.  Mixmaster must expire old message ids eventually, and so a message can be replayed if the server has expired the massage id.  However, the primary implementation of mixmaster also encodes a date into the message id, to aid it against this attack. We'll talk more about replay attacks in a future blog post also.</li>
+<li>Replay prevention is often built into the packet format, at least partly.  In the Mixmaster specification, a server keeps track of all Packet IDs seen so far, and if it sees an identical one, will discard the message as a replay.  Mixmaster must expire old packet ids eventually, and so a message can be replayed if the server has expired the packet id.  We'll talk more about replay attacks in a future blog post also.</li>
 <li>The format is vulnerable to Tagging Attacks, which I'll go over in more detail with an example in <a href="/blog/tagging_attack_on_mixmaster">a future blog post.</a></li>
 </ul>
 </p>
